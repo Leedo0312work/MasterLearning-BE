@@ -1,0 +1,6 @@
+version: '1'
+services:
+  twitter-api:
+    image: gudev328/master-learning:v3
+    ports:
+      - '3030:3030'

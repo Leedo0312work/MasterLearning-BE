@@ -8,6 +8,8 @@ import {
   getListClassForStudentController,
   getListClassForTeacherController,
   getListNotMarkController,
+  getMarkExerciseByStudent,
+  getMarkExerciseByTeacher,
   markExerciseController,
   submitExerciseController,
   updateExerciseController
@@ -28,6 +30,8 @@ router.get('/list-for-student/:id', accessTokenValidator, catchError(getListClas
 router.post('/submit', accessTokenValidator, catchError(submitExerciseController));
 
 router.get('/list-not-mark/:id', accessTokenValidator, catchError(getListNotMarkController));
+router.get('/get-mark-execire-for-teacher/:id', accessTokenValidator, catchError(getMarkExerciseByTeacher));
+router.get('/get-mark-execire-for-student/:id', accessTokenValidator, catchError(getMarkExerciseByStudent));
 router.get('/detail-to-mark/:id', accessTokenValidator, catchError(getDetailToMarkController));
 router.post('/mark', accessTokenValidator, catchError(markExerciseController));
 export default router;

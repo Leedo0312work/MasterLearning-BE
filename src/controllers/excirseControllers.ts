@@ -128,3 +128,25 @@ export const markExerciseController = async (req: Request<any, any, MarkExercise
     message: 'Chấm bài tập thành công'
   });
 };
+
+export const getMarkExerciseByTeacher = async (req: Request, res: Response) => {
+  const exercise_id = req.params.id;
+  const result = await excirseServices.getMarkExerciseByTeacher(exercise_id);
+  res.status(200).json({
+    result,
+    message: 'Lấy điểm số cho bài tập thành công'
+  });
+};
+
+export const getMarkExerciseByStudent = async (req: Request, res: Response) => {
+  const userId = req.body.decodeAuthorization.payload.userId;
+  console.log("chec",userId)
+  console.log("patyload", req.body.decodeAuthorization.payload)
+  const exercise_id = req.params.id;
+  console.log("check req",req)
+  const result = await excirseServices.getMarkExerciseByStudent(exercise_id,userId);
+  res.status(200).json({
+    result,
+    message: 'Lấy điểm số cho bài tập thành công'
+  });
+};

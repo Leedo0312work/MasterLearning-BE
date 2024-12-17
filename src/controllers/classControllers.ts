@@ -51,6 +51,15 @@ export const getClassAcceptController = async (req: Request<any, any, findClassA
     message: 'get member class accept suscess'
   });
 };
+
+export const getAllClassController = async (req: Request, res: Response) => {
+  const result = await ClassesService.getAllClass();
+  res.status(200).json({
+    result,
+    message: 'get all class suscess'
+  });
+};
+
 interface FindClassByCodeParams {
   code: string;
 }
@@ -123,6 +132,14 @@ export const deleteClassesController = async (req: Request<any, any, deleteClass
   const token = await ClassesService.deleteClasses(req.body);
   res.status(200).json({
     token,
+    message: 'delete class success'
+  });
+};
+
+export const deleteClassesAdminController = async (req: Request<any, any, deleteClassesRequest>, res: Response) => {
+  const result = await ClassesService.deleteClassesAdmin(req.body);
+  res.status(200).json({
+    result,
     message: 'delete class success'
   });
 };

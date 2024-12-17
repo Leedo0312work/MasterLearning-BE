@@ -6,7 +6,7 @@ COPY package.json .
 COPY package-lock.json .
 COPY tsconfig.json .
 COPY ecosystem.config.js .
-# COPY .env.production .
+COPY .env.production .
 COPY ./src ./src
 COPY ./uploads ./uploads
 

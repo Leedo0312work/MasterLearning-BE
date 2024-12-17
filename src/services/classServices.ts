@@ -326,6 +326,35 @@ class ClassesService {
     await db.members.deleteMany({ class_id: new ObjectId(payload.classes_id) });
     await db.classes.deleteMany({ _id: new ObjectId(payload.classes_id) });
   }
+
+  async getAllClass() {
+    const classes = await db.classes
+      .aggregate([
+        {
+          $lookup: {
+            from: 'Users',
+            localField: 'teacher_id',
+            foreignField: '_id',
+            as: 'teacher_info'
+          }
+        },
+        {
+          $project: {
+            'teacher_info.password': 0,
+            'teacher_info.emailVerifyToken': 0,
+            'teacher_info.forgotPasswordToken': 0
+          }
+        }
+      ])
+      .toArray();
+    return classes;
+  }
+
+  async deleteClassesAdmin(payload: deleteClassesRequest) {
+    await db.classes.deleteMany({ _id: new ObjectId(payload.classes_id) });
+    await db.members.deleteMany({ class_id: new ObjectId(payload.classes_id) });
+    await db.lessons.deleteMany({ class_id: new ObjectId(payload.classes_id) });
+  }
 }
 const classService = new ClassesService();
 export default classService;

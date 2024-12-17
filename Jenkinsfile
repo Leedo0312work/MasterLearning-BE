@@ -14,7 +14,7 @@ pipeline {
     stages {
         stage('get information project') {
             agent {
-                label '192.168.237.105'
+                label 'development-agent'
             }
             steps {
                 script {
@@ -33,7 +33,7 @@ pipeline {
 
         stage('build') {
             agent {
-                label '192.168.237.105'
+                label 'development-agent'
             }
             steps {
                 script {
@@ -44,7 +44,7 @@ pipeline {
 
         stage('push to registry') {
             agent {
-                label '192.168.237.105'
+                label 'development-agent'
             }
             steps {
                 script {
@@ -60,13 +60,14 @@ pipeline {
 
         stage('deploy') {
             agent {
-                label '192.168.237.105'
+                label 'development-agent'
             }
             steps {
                 script {
                     sh(script: """
                         sudo su ${USER_PROJECT} -c "docker rm -f $PROJECT_NAME; docker run --name $PROJECT_NAME -dp 3030:3030 ${REGISTRY_URL}/${USER_PROJECT}/${IMAGE_VERSION}"
                         docker logout ${REGISTRY_URL}
+                        pwd
                     """, label: "")
                 }
             }
@@ -74,7 +75,7 @@ pipeline {
 
         // stage('deploy') {
         //     agent {
-        //         label '192.168.237.105'
+        //         label 'development-agent'
         //     }
         //     steps {
         //         script {

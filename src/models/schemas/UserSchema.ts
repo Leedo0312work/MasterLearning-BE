@@ -42,6 +42,6 @@ export default class User {
     this.emailVerifyToken = user.emailVerifyToken || '';
     this.forgotPasswordToken = user.forgotPasswordToken || '';
     this.verify = user.verify || UserVerifyStatus.Unverified;
-    this.avatar = user.avatar || '';
+    this.avatar = user.avatar || 'https://topdanangcity.com/wp-content/uploads/2024/09/avatar-trang-1Ob2zMM.jpg';
   }
 }

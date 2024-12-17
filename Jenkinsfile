@@ -21,7 +21,7 @@ pipeline {
                     withCredentials([file(credentialsId: "${ENV_FILE}", variable: "ENV_FILE_PATH")]) {
                         sh "cp ${ENV_FILE_PATH} .env" 
                     }
-                    CI_PROJECT_NAME = sh(script: "git config --get remote.origin.url | sed "s/.*\\(\\/\\([a-zA-Z0-9_-]*\\)\\.git\\)/\\2/"", returnStdout: true).trim()
+                    CI_PROJECT_NAME = sh(script: "git config --get remote.origin.url | sed 's/.*\\(\\/\\([a-zA-Z0-9_-]*\\)\\.git\\)/\\2/'", returnStdout: true).trim()
 
                     def CI_COMMIT_HASH = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
                     CI_COMMIT_SHORT_SHA = CI_COMMIT_HASH.take(8)

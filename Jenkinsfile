@@ -18,16 +18,16 @@ pipeline {
             }
             steps {
                 script {
-                    withCredentials([file(credentialsId: "${ENV_FILE}", variable: "ENV_FILE_PATH")]) {
-                        sh "sudo cp ${ENV_FILE_PATH} .env" 
-                    }
                     CI_PROJECT_NAME = sh(script: "git config --get remote.origin.url | sed 's/.*\\(\\/\\([a-zA-Z0-9_-]*\\)\\.git\\)/\\2/'", returnStdout: true).trim()
 
                     def CI_COMMIT_HASH = sh(script: "git rev-parse HEAD", returnStdout: true).trim()
                     CI_COMMIT_SHORT_SHA = CI_COMMIT_HASH.take(8)
 
                     IMAGE_VERSION = "${USER_PROJECT}/${PROJECT_NAME}:${CI_COMMIT_SHORT_SHA}"
-                    
+                    withCredentials([file(credentialsId: "${ENV_FILE}", variable: "ENV_FILE_PATH")]) {
+                        sh "cd ../" 
+                        sh "sudo cp ${ENV_FILE_PATH} .env" 
+                    }
                 }
             }
         }
@@ -41,13 +41,16 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", passwordVariable: "DOCKER_PASSWORD", usernameVariable: "DOCKER_USERNAME")]) {
                         sh "docker pull ${REGISTRY_URL}/${USER_PROJECT}/${PROJECT_NAME}:latest || true"
                         sh "docker build --cache-from ${REGISTRY_URL}/${USER_PROJECT}/${PROJECT_NAME}:latest --tag ${REGISTRY_URL}/${IMAGE_VERSION} ."
+                        
+                        sh "docker login ${REGISTRY_URL} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                         sh "docker push ${REGISTRY_URL}/${IMAGE_VERSION} "
+                        sh "docker logout"
                     }
                 }
             }
         }
 
-        stage("tag latest") {
+        stage("release tag") {
             agent {
                 label "development-agent"
             }
@@ -60,6 +63,7 @@ pipeline {
                         
                         sh "docker tag ${REGISTRY_URL}/${IMAGE_VERSION} ${REGISTRY_URL}/${USER_PROJECT}/${PROJECT_NAME}:latest"
                         sh "docker push ${REGISTRY_URL}/${USER_PROJECT}/${PROJECT_NAME}:latest"
+                        sh "docker logout"
                     }
                 }
             }

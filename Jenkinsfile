@@ -19,7 +19,6 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: "${ENV_FILE}", variable: 'ENV_FILE_PATH')]) {
-                        sh "sudo su ${USER_PROJECT}"
                         sh "cp ${ENV_FILE_PATH} .env" 
                     }
                     CI_PROJECT_NAME = sh(script: "git config --get remote.origin.url | sed 's/.*\\(\\/\\([a-zA-Z0-9_-]*\\)\\.git\\)/\\2/'", returnStdout: true).trim()

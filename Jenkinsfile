@@ -76,10 +76,8 @@ pipeline {
             steps {
                 script {
                     sh(script: """
-                        pwd
                         cd ../
-                        pwd
-                        docker-compose -f docker-compose.yml up --build -d
+                        docker-compose up -d
                     """, label: "Deploy with Docker Compose")
                 }
             }

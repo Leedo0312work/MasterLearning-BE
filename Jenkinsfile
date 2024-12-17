@@ -40,7 +40,7 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDENTIALS}", passwordVariable: "DOCKER_PASSWORD", usernameVariable: "DOCKER_USERNAME")]) {
                         sh "docker pull ${REGISTRY_URL}/${USER_PROJECT}/${PROJECT_NAME}:latest || true"
-                        sh "docker build --cache-from ${REGISTRY_URL}/${USER_PROJECT}/${PROJECT_NAME}:latest --tag ${IMAGE_VERSION} ."
+                        sh "docker build --cache-from ${REGISTRY_URL}/${USER_PROJECT}/${PROJECT_NAME}:latest --tag ${REGISTRY_URL}/${IMAGE_VERSION} ."
                         sh "docker push ${REGISTRY_URL}/${IMAGE_VERSION} "
                     }
                 }

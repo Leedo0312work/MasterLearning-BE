@@ -84,3 +84,8 @@ export enum SendEmail {
   VerifyEmail,
   ForgotPassword
 }
+export interface SearchMark{
+  point:number
+  name:string
+  date:Date
+}

@@ -19,6 +19,7 @@ import {
   LessonTypeEnum,
   MemberClassTypeEnum,
   PointType,
+  SearchMark,
   StudentViewRoleExercise
 } from '~/constants/enum';
 import Members from '~/models/schemas/MemberClasses';
@@ -36,6 +37,7 @@ import {
   UpdateExerciseRequest
 } from '~/models/requests/excirseRequest';
 import ExerciseAnswer from '~/models/schemas/ExcirseAnswer';
+
 
 class ExcirseServices {
   constructor() {}
@@ -406,167 +408,99 @@ class ExcirseServices {
     return saveData;
   }
   
-  async getMarkExerciseByTeacher(id: string) {
-      const typePont = await db.excirse.findOne({_id:new ObjectId(id)});
-      const type = typePont?.point_type;
-      console.log("check type",type)
-      let result ;
-      if(type == PointType.First){
-        result = await db.excirseAnswers.aggregate([
-          {
-            $match: {
-              exercise_id: new ObjectId(id),
-              status: AnswerExerciseStatus.Marked
-            }
-          },
-          {
+
+  async getMarkExerciseByTeacher(id: string, searchField: any) {
+    const typePont = await db.excirse.findOne({ _id: new ObjectId(id) });
+    const type = typePont?.point_type;
+    console.log("check type", type);
+
+    // Tạo điều kiện tìm kiếm
+    const searchConditions: any = {
+        exercise_id: new ObjectId(id),
+        status: AnswerExerciseStatus.Marked,
+    };
+
+    const pipeline: any[] = [
+        {
             $lookup: {
-              from: 'Users',
-              localField: 'user_id',
-              foreignField: '_id',
-              as: 'user_info'
-            }
+                from: 'Users',
+                localField: 'user_id',
+                foreignField: '_id',
+                as: 'user_info',
+            },
+        },
+        { $unwind: '$user_info' },
+        
+        // Đưa $match vào sau khi đã unwind để có thể filter theo name, point, và date
+        
+        
+        // Sắp xếp theo điểm hoặc thời gian (tuỳ thuộc vào PointType)
+        {
+            $sort: type === PointType.First
+                ? { created_at: 1 }
+                : type === PointType.Last
+                ? { created_at: -1 }
+                : { point: -1, created_at: 1 },
+        },
+        {
+          $match: {
+              ...searchConditions, // Các điều kiện tìm kiếm cơ bản
+              ...(searchField.name && {
+                  'user_info.name_without_accents': { $regex: searchField.name, $options: 'i' },
+              }),
+              ...(searchField.point && {
+                  point: parseFloat(searchField.point),
+              }),
+              ...(searchField.date && {
+                  created_at: {
+                      $gte: new Date(new Date(searchField.date).setHours(0, 0, 0, 0)),
+                      $lt: new Date(new Date(searchField.date).setHours(23, 59, 59, 999)),
+                  },
+              }),
           },
-          {
-            $unwind: "$user_info"  // Nếu user_info là mảng, cần làm phẳng
-          },
-          {
-            $sort: { created_at: 1 }  // Sắp xếp theo thời gian, lâu nhất trước
-          },
-          {
+      },
+
+        // Nhóm lại sau khi sắp xếp để lấy thông tin của người dùng và điểm số
+        {
             $group: {
-              _id: "$user_id",  // Nhóm theo user_id
-              point: { $first: "$point" },  // Lấy điểm của bản ghi cũ nhất
-              created_at: { $first: "$created_at" },  // Lấy thời gian của bản ghi cũ nhất
-              user_info: { $first: "$user_info" }  // Lấy thông tin người dùng
-            }
-          },
-          {
+                _id: '$user_id',
+                point: {
+                    $first: 
+                        type === PointType.Last
+                            ? '$point'
+                            : { $cond: [{ $eq: [type, PointType.First] }, '$point', '$point'] },
+                },
+                created_at: { $first: '$created_at' },
+                user_info: { $first: '$user_info' },
+            },
+        },
+
+        {
             $addFields: {
-              point_type: type  // Thêm trường point_type với giá trị cố định là 1
-            }
-          },
-          {
+                point_type: type,
+            },
+        },
+        {
             $project: {
-              "user_info._id": 1,  // Lấy trường _id
-              "user_info.name": 1,  // Lấy trường name
-              "user_info.email": 1,  // Lấy trường email
-              "user_info.date_of_birth": 1,  // Lấy trường date_of_birth
-              "user_info.avatar": 1,  // Lấy trường avatar
-              point: 1,  // Lấy điểm của bản ghi cũ nhất
-              created_at: 1,  // Lấy thời gian của bản ghi cũ nhất
-              point_type:1
-            }
-          }
-        ])
-        .toArray();
-      }if(type == PointType.Last){
-        result = await db.excirseAnswers.aggregate([
-          {
-            $match: {
-              exercise_id: new ObjectId(id),
-              status: AnswerExerciseStatus.Marked
-            }
-          },
-          {
-            $lookup: {
-              from: 'Users',
-              localField: 'user_id',
-              foreignField: '_id',
-              as: 'user_info'
-            }
-          },
-          {
-            $unwind: "$user_info"  // Nếu user_info là mảng, cần làm phẳng
-          },
-          {
-            $sort: { created_at: -1 }  // Sắp xếp theo thời gian, mới nhất trước
-          },
-          {
-            $group: {
-              _id: "$user_id",  // Nhóm theo user_id
-              point: { $first: "$point" },  // Lấy điểm của bản ghi mới nhất
-              created_at: { $first: "$created_at" },  // Lấy thời gian của bản ghi mới nhất
-              user_info: { $first: "$user_info" }  // Lấy thông tin người dùng
-            }
-          },
-          {
-            $addFields: {
-              point_type: type  // Thêm trường point_type với giá trị cố định là 1
-            }
-          },
-          {
-            $project: {
-              "user_info._id": 1,  // Lấy trường _id
-              "user_info.name": 1,  // Lấy trường name
-              "user_info.email": 1,  // Lấy trường email
-              "user_info.date_of_birth": 1,  // Lấy trường date_of_birth
-              "user_info.avatar": 1,  // Lấy trường avatar
-              point: 1,  // Lấy điểm của bản ghi mới nhất
-              created_at: 1,  // Lấy thời gian của bản ghi mới nhất,
-              point_type:1
-            }
-          }
-        ])
-        .toArray();
-      }else{
-        result = await db.excirseAnswers.aggregate([
-          {
-            $match: {
-              exercise_id: new ObjectId(id),
-              status: AnswerExerciseStatus.Marked
-            }
-          },
-          {
-            $lookup: {
-              from: 'Users',
-              localField: 'user_id',
-              foreignField: '_id',
-              as: 'user_info'
-            }
-          },
-          {
-            $unwind: "$user_info"  // Nếu user_info là một mảng, bạn cần phải dùng $unwind để làm phẳng nó
-          },
-          {
-            $sort: {
-              point: -1,  // Sắp xếp theo điểm giảm dần để lấy điểm cao nhất
-              created_at: 1  // Sắp xếp theo thời gian tạo tăng dần
-            }
-          },
-         
-          {
-            $group: {
-              _id: "$user_id",  // Nhóm theo user_id (học sinh)
-              point: { $first: "$point" }, // Lấy điểm cao nhất
-              created_at: { $first: "$created_at" }, // Lấy thời gian tạo của bản ghi có điểm cao nhất
-              user_info: { $first: "$user_info" }  // Lấy thông tin người dùng
-            }
-          },
-          {
-            $addFields: {
-              point_type: type  // Thêm trường point_type với giá trị cố định là 1
-            }
-          },
-          {
-            $project: {
-              "user_info._id": 1,  // Lấy trường _id
-              "user_info.name": 1,  // Lấy trường name
-              "user_info.email": 1,  // Lấy trường email
-              "user_info.date_of_birth": 1,  // Lấy trường date_of_birth
-              "user_info.avatar": 1,  // Lấy trường avatar
-              point: 1,  // Hiển thị điểm cao nhất
-              created_at: 1,  // Hiển thị thời gian tạo
-              point_type:1
-            }
-          }
-        ]).toArray();
-      }
-      
-     
-      console.log("chck result")
-      return result
-  }
+                'user_info._id': 1,
+                'user_info.name': 1,
+                'user_info.email': 1,
+                'user_info.date_of_birth': 1,
+                'user_info.avatar': 1,
+                point: 1,
+                created_at: 1,
+                point_type: 1,
+            },
+        },
+    ];
+
+    // Sử dụng pipeline đã được tạo để thực hiện truy vấn
+    const result = await db.excirseAnswers.aggregate(pipeline).toArray();
+    return result;
+}
+
+
+
   async getMarkExerciseByStudent(id: string,userId:string) {
     console.log("check id, userid",id,userId)
     const result = await db.excirseAnswers.aggregate([

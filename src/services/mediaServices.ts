@@ -89,7 +89,7 @@ class MediasService {
     const filesUploaded = await handleUploadPDF(req);
     const result: Media[] = await Promise.all(
       filesUploaded.map(async (fileUploaded) => {
-        const newPath = path.resolve('uploads/pdfs') + `\\${fileUploaded.newFilename.split('.')[0]}.pdf`;
+        const newPath = path.resolve('uploads/pdfs') + `/${fileUploaded.newFilename.split('.')[0]}.pdf`;
         const s3Result = await UploadFileToS3(
           'pdfs/' + fileUploaded.newFilename,
           newPath,

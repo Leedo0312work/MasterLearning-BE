@@ -59,7 +59,8 @@ class LessonsService {
   }
 
   async getLessonbyClass(payload: findLesson) {
-    const lessons = await db.lessons.find({ class_id: new ObjectId(payload.class_id), censored: true }).toArray();
+    const lessons = await db.lessons.find({ class_id: new ObjectId(payload.class_id) }).toArray();
+    // const lessons = await db.lessons.find({ class_id: new ObjectId(payload.class_id), censored: true }).toArray();
     return lessons;
   }
 

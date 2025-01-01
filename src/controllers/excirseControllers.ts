@@ -130,8 +130,10 @@ export const markExerciseController = async (req: Request<any, any, MarkExercise
 };
 
 export const getMarkExerciseByTeacher = async (req: Request, res: Response) => {
+  console.log("check param get diem so",req.query)
+  const searchField = req.query;
   const exercise_id = req.params.id;
-  const result = await excirseServices.getMarkExerciseByTeacher(exercise_id);
+  const result = await excirseServices.getMarkExerciseByTeacher(exercise_id,searchField);
   res.status(200).json({
     result,
     message: 'Lấy điểm số cho bài tập thành công'

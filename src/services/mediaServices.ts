@@ -130,11 +130,9 @@ class MediasService {
       filesUploaded.map(async (fileUploaded) => {
         encodeVideoQueue.enqueue(fileUploaded.filepath);
         return {
-          url: isProduction
-            ? `${env.host}/medias/video-hls/${fileUploaded.newFilename.split('.')[0]}/master.m3u8`
-            : `http://masterlearning.leedowork.id.vn:${env.port}/medias/video-hls/${
-                fileUploaded.newFilename.split('.')[0]
-              }/master.m3u8`,
+          url: `http://masterlearning.leedowork.id.vn:${env.port}/medias/video-hls/${
+            fileUploaded.newFilename.split('.')[0]
+          }/master.m3u8`,
           type: MediaType.VideoHLS
         };
       })

@@ -343,8 +343,8 @@ class TweetsService {
         .aggregate<Tweet>([
           {
             $match: {
-              censored: false,
-              type: TweetTypeEnum.Tweet
+              censored: false
+              // type: TweetTypeEnum.Tweet
             }
           },
           {

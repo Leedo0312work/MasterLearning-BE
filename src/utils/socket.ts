@@ -79,7 +79,10 @@ const initializeSocket = (httpServer: ServerHttp) => {
       delete users[userId];
     });
     socket.on('newComment', (room, comment) => {
-      io.to(room).emit('commentUpdated', comment);
+      io.to(room).emit('commentUpdated', {
+        ...comment,
+        content: 'Nội dung đang được kiểm duyệt'
+      });
     });
 
     socket.on('joinRoomComment', (room) => {

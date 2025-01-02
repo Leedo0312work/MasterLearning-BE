@@ -132,7 +132,9 @@ class MediasService {
         return {
           url: isProduction
             ? `${env.host}/medias/video-hls/${fileUploaded.newFilename.split('.')[0]}/master.m3u8`
-            : `http://localhost:${env.port}/medias/video-hls/${fileUploaded.newFilename.split('.')[0]}/master.m3u8`,
+            : `http://masterlearning.leedowork.id.vn:${env.port}/medias/video-hls/${
+                fileUploaded.newFilename.split('.')[0]
+              }/master.m3u8`,
           type: MediaType.VideoHLS
         };
       })
